@@ -2,30 +2,38 @@
 
 A minimal Flask library for web apps with Firestore, key-based authentication, rate limiting, and Google App Engine deployment helpers.
 
+## New here?
+
+Follow **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** — step-by-step setup for:
+
+1. **Environment** — Python, venv, Cursor, install, `.env`  
+2. **Google Cloud** — `gcloud`, project, Firestore, App Engine, billing  
+3. **Run the example app** — browser, Notes, tests  
+4. **Deploy** — `app.production.yaml`, App Engine  
+5. **Publish package** (optional) — GitHub, Artifact Registry  
+
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
 | [`flask_base/`](flask_base/) | Installable Python package (`pip install`) |
 | [`example/`](example/) | Starter app: auth pages, REST API, Firestore notes |
-| [`docs/GCLOUD_SETUP.md`](docs/GCLOUD_SETUP.md) | GitHub, Artifact Registry, and App Engine setup |
+| [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) | Full setup: local, GCP, deploy, optional publishing |
+| [`docs/GCLOUD_SETUP.md`](docs/GCLOUD_SETUP.md) | Redirect — content lives in GETTING_STARTED |
 | [`tests/`](tests/) | Package and example smoke tests |
 
-## Quick start (local)
+## Quick start (if you already know the steps)
 
-```bash
-# Install the library in editable mode
-pip install -e flask_base
-
-# Run the example app
+```powershell
+# Repo root, venv active
+pip install -r requirements-dev.txt
 cd example
-copy .env.example .env   # Windows; or cp on Unix
-# Edit .env with your GCP project, FLASK_SECRET, ADMIN_KEY, and user keys
-pip install -r requirements.txt
+copy .env.example .env
+# Edit .env — see GETTING_STARTED.md
 python app.py --run
 ```
 
-Open the URL printed in the console (append `?key=your-user-secret` from `.env`).
+Open the URL printed in the console (use `?key=` from `.env`, e.g. `alice-secret`).
 
 ## Install in a new project
 
@@ -35,7 +43,7 @@ Open the URL printed in the console (append `?key=your-user-secret` from `.env`)
 -e /path/to/flask-base/flask_base
 ```
 
-**Production** (private Artifact Registry — see [docs/GCLOUD_SETUP.md](docs/GCLOUD_SETUP.md)):
+**Production** (private Artifact Registry — see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) Step 5):
 
 ```text
 --extra-index-url https://REGION-python.pkg.dev/PROJECT_ID/flask-base-python/simple/

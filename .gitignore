@@ -101,8 +101,9 @@ celerybeat.pid
 # SageMath parsed files
 *.sage.py
 
-# Environments
+# Environments (secret files named exactly ".env" — not .env.example)
 .env
+!.env.example
 .venv
 env/
 venv/
@@ -131,8 +132,9 @@ dmypy.json
 # Google Cloud specific
 .gcloudignore
 
-# Example local env
+# Example app: ignore secrets, keep templates (example/.env.example, example/app.yaml)
 example/.env
+example/app.production.yaml
 
 # Package build artifacts (flask_base subproject)
 flask_base/dist/

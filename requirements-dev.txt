@@ -1,2 +1,6 @@
+# Install from repo root with venv active:
+#   pip install -r requirements-dev.txt
+
 -e flask_base
 pytest>=7.0.0
+gunicorn>=21.0.0

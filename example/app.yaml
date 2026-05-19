@@ -1,7 +1,10 @@
+# Committed deploy template (placeholders only). To deploy to the cloud:
+#   copy app.yaml app.production.yaml
+# Edit app.production.yaml with production secrets (gitignored), then python app.py --deploy
+
 runtime: python311
 
 env: standard
-
 entrypoint: gunicorn -b :$PORT app:app
 
 automatic_scaling:

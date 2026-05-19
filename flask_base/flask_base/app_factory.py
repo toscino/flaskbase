@@ -135,6 +135,11 @@ class FlaskApp:
         parser = argparse.ArgumentParser(description="Flask App Runner")
         parser.add_argument('--run', action='store_true', help='Run the Flask server')
         parser.add_argument('--deploy', action='store_true', help='Deploy to App Engine')
+        parser.add_argument(
+            '--yaml',
+            default=None,
+            help='App Engine yaml for --deploy (default: app.production.yaml if present, else app.yaml)',
+        )
         
         args = parser.parse_args()
         
@@ -156,12 +161,13 @@ class FlaskApp:
             
             # Run deploy script
             from .deploy import main as deploy_main
-            deploy_main()
+            deploy_main(yaml_path=args.yaml)
         else:
             parser.print_usage()
             print("\nERROR: Must specify --run or --deploy")
             print("  python app.py --run    - Start the Flask server")
-            print("  python app.py --deploy - Deploy to App Engine")
+            print("  python app.py --deploy - Deploy (uses app.production.yaml if present)")
+            print("  python app.py --deploy --yaml app.yaml - Override deploy config file")
             sys.exit(1)
 
     def _setup_template_loader(self) -> None:

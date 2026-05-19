@@ -13,6 +13,20 @@ except ImportError:
     pass
 
 
+def resolve_deploy_yaml(explicit_path: str | None = None) -> str:
+    """
+    Choose App Engine config for deploy.
+
+    Uses explicit_path if given, else app.production.yaml when present, else app.yaml.
+    """
+    if explicit_path:
+        return explicit_path
+    prod = Path("app.production.yaml")
+    if prod.is_file():
+        return str(prod)
+    return "app.yaml"
+
+
 def set_gcloud_project() -> None:
     """Set the gcloud active project from GOOGLE_CLOUD_PROJECT environment variable."""
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
@@ -39,11 +53,17 @@ def set_gcloud_project() -> None:
         sys.exit(1)
 
 
-def main() -> None:
+def main(yaml_path: str | None = None) -> None:
     """Main entry point for deploy script."""
     project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
     if not project_id:
         print("ERROR: GOOGLE_CLOUD_PROJECT environment variable is required")
+        sys.exit(1)
+
+    chosen = resolve_deploy_yaml(yaml_path)
+    deploy_file = Path(chosen)
+    if not deploy_file.is_file():
+        print(f"ERROR: App Engine config not found: {deploy_file}")
         sys.exit(1)
     
     print("\n" + "=" * 60)
@@ -53,12 +73,12 @@ def main() -> None:
     # Set the correct project
     set_gcloud_project()
     
-    print("\nDeploying to App Engine...\n")
+    print(f"\nDeploying to App Engine ({deploy_file})...\n")
     
     # Deploy to App Engine
     try:
         subprocess.run(
-            "gcloud app deploy --quiet",
+            f"gcloud app deploy {deploy_file} --quiet",
             check=True,
             shell=True  # Use shell=True on Windows
         )
@@ -71,5 +91,3 @@ def main() -> None:
     except subprocess.CalledProcessError:
         print("\nERROR: Deployment failed.")
         sys.exit(1)
-
-
