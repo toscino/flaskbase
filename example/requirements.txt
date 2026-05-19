@@ -1,0 +1,9 @@
+# Local development: install flask-base from the parent package directory
+-e ../flask_base
+
+# App server (not included in flask-base library)
+gunicorn>=21.0.0
+
+# Production (Artifact Registry) — uncomment and set your project/region:
+# --extra-index-url https://REGION-python.pkg.dev/PROJECT_ID/flask-base-python/simple/
+# flask-base==0.2.0

@@ -1,0 +1,2 @@
+-e flask_base
+pytest>=7.0.0

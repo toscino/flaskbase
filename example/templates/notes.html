@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Notes - {{ app_name }}{% endblock %}
+
+{% block content %}
+<main style="padding: 2rem; max-width: 640px; margin: 0 auto;">
+    <h1>Notes</h1>
+    <form id="note-form" style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
+        <input type="text" id="note-text" placeholder="New note..." required
+               style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #111; color: #fff;">
+        <button type="submit" style="padding: 0.5rem 1rem; cursor: pointer;">Add</button>
+    </form>
+    <ul id="notes-list" style="margin-top: 1.5rem; list-style: none;"></ul>
+    <p id="notes-error" style="color: #f66; margin-top: 1rem; display: none;"></p>
+</main>
+<script>
+async function loadNotes() {
+    const list = document.getElementById('notes-list');
+    const err = document.getElementById('notes-error');
+    err.style.display = 'none';
+    try {
+        const res = await fetch('/api/notes');
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || res.statusText);
+        list.innerHTML = (data.notes || []).map(n => {
+            const when = n.created_at ? new Date(n.created_at).toLocaleString() : '';
+            return `<li style="padding: 0.75rem 0; border-bottom: 1px solid #333;">
+                <div>${escapeHtml(n.text || '')}</div>
+                <small style="color: #888;">${when}</small>
+            </li>`;
+        }).join('') || '<li style="color:#888;">No notes yet.</li>';
+    } catch (e) {
+        err.textContent = e.message;
+        err.style.display = 'block';
+    }
+}
+
+function escapeHtml(s) {
+    const d = document.createElement('div');
+    d.textContent = s;
+    return d.innerHTML;
+}
+
+document.getElementById('note-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const input = document.getElementById('note-text');
+    const text = input.value.trim();
+    if (!text) return;
+    const res = await fetch('/api/notes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+    });
+    if (res.ok) {
+        input.value = '';
+        loadNotes();
+    }
+});
+
+loadNotes();
+</script>
+{% endblock %}

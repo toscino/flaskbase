@@ -1,0 +1,52 @@
+# Publish flask-base wheel to Google Artifact Registry on version tags.
+#
+# Required GitHub secrets / variables (configure before use):
+#   GCP_PROJECT_ID
+#   GCP_WORKLOAD_IDENTITY_PROVIDER  (for google-github-actions/auth)
+#   GCP_SERVICE_ACCOUNT
+#   ARTIFACT_REGISTRY_LOCATION        (e.g. us-central1)
+#   ARTIFACT_REGISTRY_REPO            (e.g. flask-base-python)
+
+name: Publish to Artifact Registry
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Build wheel
+        run: |
+          pip install build
+          cd flask_base
+          python -m build
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT }}
+
+      - name: Upload to Artifact Registry
+        env:
+          PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+          LOCATION: ${{ vars.ARTIFACT_REGISTRY_LOCATION || 'us-central1' }}
+          REPO: ${{ vars.ARTIFACT_REGISTRY_REPO || 'flask-base-python' }}
+        run: |
+          pip install twine keyrings.google-artifactregistry-auth
+          twine upload \
+            --repository-url "https://${LOCATION}-python.pkg.dev/${PROJECT_ID}/${REPO}/" \
+            flask_base/dist/*

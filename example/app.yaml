@@ -1,0 +1,22 @@
+runtime: python311
+
+env: standard
+
+entrypoint: gunicorn -b :$PORT app:app
+
+automatic_scaling:
+  min_instances: 0
+  max_instances: 2
+  target_cpu_utilization: 0.8
+
+env_variables:
+  GOOGLE_CLOUD_PROJECT: "your-gcp-project-id"
+  FLASK_ENV: production
+  FLASK_SECRET: "replace-with-random-secret"
+  ADMIN_KEY: "replace-with-admin-key"
+  FLASK_BASE_KEY_PREFIX: "EXAMPLE_KEY_"
+  EXAMPLE_KEY_ALICE: "alice-secret:view"
+
+handlers:
+- url: /.*
+  script: auto

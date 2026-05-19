@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}Home - {{ app_name }}{% endblock %}
+
+{% block content %}
+<main style="padding: 2rem; max-width: 640px; margin: 0 auto;">
+    <h1>Welcome</h1>
+    <p style="margin-top: 1rem; color: #ccc;">
+        This is a minimal starter app built on <strong>flask-base</strong>.
+        You are signed in as <strong>{{ session.user_id }}</strong>.
+    </p>
+    <p style="margin-top: 1rem;">
+        <a href="/notes" style="color: #6cf;">Go to Notes</a>
+    </p>
+</main>
+{% endblock %}
