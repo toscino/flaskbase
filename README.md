@@ -10,7 +10,7 @@ Follow **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** — step-by-step s
 2. **Google Cloud** — `gcloud`, project, Firestore, App Engine, billing  
 3. **Run the example app** — browser, Notes, tests  
 4. **Deploy** — `app.production.yaml`, App Engine  
-5. **Publish package** (optional) — GitHub, Artifact Registry  
+5. **Publish library** — GitHub Release wheel ([toscino/flaskbase](https://github.com/toscino/flaskbase))  
 
 ## Repository layout
 
@@ -37,20 +37,20 @@ Open the URL printed in the console (use `?key=` from `.env`, e.g. `alice-secret
 
 ## Install in a new project
 
-**Development** (path dependency):
+**Development** (editable, from this monorepo):
 
 ```text
--e /path/to/flask-base/flask_base
+-e flask_base
 ```
 
-**Production** (private Artifact Registry — see [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) Step 5):
+**Production** (App Engine — pinned GitHub Release wheel):
 
 ```text
---extra-index-url https://REGION-python.pkg.dev/PROJECT_ID/flask-base-python/simple/
-flask-base==0.2.0
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
+gunicorn>=21.0.0
 ```
 
-**Fallback:** copy the `flask_base/` folder into your project (not recommended long term).
+Bump the URL when you publish a new tag. See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) Step 5.
 
 ## Minimal app
 

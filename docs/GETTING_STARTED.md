@@ -9,7 +9,7 @@ You will:
 3. Run the example app in your browser  
 4. (Optional) Deploy to App Engine  
 
-Optional later: publish `flask-base` to GitHub and Artifact Registry — [Step 5](#step-5-publish-flask-base-optional).
+Before first App Engine deploy: publish a GitHub Release wheel — [Step 5](#step-5-publish-flask-base-github-release).
 
 ---
 
@@ -348,6 +348,8 @@ python -m pytest tests/ -v
 
 Complete [Step 2.5](#25-initialize-app-engine-before-firestore) first. If deploy says the project has no App Engine application, you skipped that step or created Firestore first (see troubleshooting).
 
+**Before the first deploy:** publish `flask-base` as a [GitHub Release](https://github.com/toscino/flaskbase/releases) wheel (see [Step 5](#step-5-publish-flask-base-github-release)). App Engine installs it from the pinned URL in `example/requirements.txt`, not from your local editable install.
+
 ### Deploy config (soft overview)
 
 Three files, three jobs — easy to mix up at first:
@@ -393,6 +395,8 @@ Visit `https://YOUR_PROJECT_ID.appspot.com/?key=your-production-user-secret` (th
 
 ### Step 4 checklist
 
+- [ ] GitHub Release `v0.2.0` exists with wheel asset (Step 5)  
+- [ ] `example/requirements.txt` pins that Release wheel URL  
 - [ ] `app.production.yaml` exists with production secrets  
 - [ ] Step 2.5 App Engine initialized  
 - [ ] Deploy succeeded  
@@ -404,33 +408,41 @@ Copy patterns from `example/`, read [QUICKSTART.md](../flask_base/QUICKSTART.md)
 
 ---
 
-## Step 5: Publish flask-base (optional)
+## Step 5: Publish flask-base (GitHub Release)
 
-Only when you want a **private GitHub repo** and to install `flask-base` from **Artifact Registry** in other projects — not required to run or deploy the example (the example uses `-e ../flask_base` locally).
+Library repo: [github.com/toscino/flaskbase](https://github.com/toscino/flaskbase). Production apps install a **pinned wheel URL** from GitHub Releases (not PyPI). Local dev still uses editable install from `requirements-dev.txt`.
 
-### GitHub
+### First release (manual or CI)
 
-```powershell
-gh repo create flask-base --private --source=. --remote=origin
-git push -u origin main
-```
-
-### Artifact Registry and wheel
+**Option A — tag push (recommended after CI is on `main`):**
 
 ```powershell
-gcloud services enable artifactregistry.googleapis.com
-gcloud artifacts repositories create flask-base-python `
-  --repository-format=python `
-  --location=us-central1 `
-  --description="flask-base wheels"
-
 cd flask_base
-pip install build twine keyrings.google-artifactregistry-auth
+pip install build
 python -m build
-twine upload --repository-url https://us-central1-python.pkg.dev/PROJECT_ID/flask-base-python/ dist/*
+cd ..
+git tag v0.2.0
+git push origin v0.2.0
 ```
 
-Tag releases (e.g. `v0.2.0`) for [`.github/workflows/publish.yml`](../.github/workflows/publish.yml) after configuring GCP credentials in GitHub.
+GitHub Actions ([`.github/workflows/publish.yml`](../.github/workflows/publish.yml)) builds the wheel and attaches it to the Release.
+
+**Option B — manual upload:** GitHub → Releases → **Create release** → tag `v0.2.0` → upload `flask_base/dist/flask_base-0.2.0-py3-none-any.whl`.
+
+### Pin the wheel in your app
+
+In `example/requirements.txt` (already set for this repo):
+
+```text
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
+gunicorn>=21.0.0
+```
+
+Bump the URL when you tag `v0.2.1`, etc. Same URL works for every GCP project — no per-project registry.
+
+### Optional: private Artifact Registry
+
+Use GCP Artifact Registry only if the library must stay private. See historical notes in git history or add `gcloud artifacts repositories create` per [Google Cloud docs](https://cloud.google.com/artifact-registry/docs/python/store-python).
 
 ---
 
@@ -438,8 +450,9 @@ Tag releases (e.g. `v0.2.0`) for [`.github/workflows/publish.yml`](../.github/wo
 
 ### `ModuleNotFoundError: flask_base`
 
-- Activate venv: `.\.venv\Scripts\Activate.ps1`  
-- From repo root: `pip install -r requirements-dev.txt`  
+**Local:** Activate venv: `.\.venv\Scripts\Activate.ps1` — from repo root: `pip install -r requirements-dev.txt`  
+
+**App Engine (502 / nginx / upstream connect error):** Check logs (`gcloud app logs read -s default --limit=20`). If you see `No module named 'flask_base'`, ensure `example/requirements.txt` includes the GitHub Release wheel URL and that Release exists on GitHub before redeploying.
 
 ### `../flask_base is not a valid editable requirement`
 

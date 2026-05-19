@@ -2,10 +2,7 @@
 #   cd ..
 #   pip install -r requirements-dev.txt
 #
-# That installs flask-base in editable mode plus gunicorn.
+# Production (App Engine): pinned GitHub Release wheel (bump URL when you tag a new version).
 
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
 gunicorn>=21.0.0
-
-# Production (App Engine) — use Artifact Registry instead of -e:
-# --extra-index-url https://REGION-python.pkg.dev/PROJECT_ID/flask-base-python/simple/
-# flask-base==0.2.0

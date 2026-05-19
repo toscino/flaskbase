@@ -71,6 +71,17 @@ def run_checks(host: str = "0.0.0.0", port: int = 8080) -> None:
     print("✓ Environment checks passed")
 
 
+def _requirements_include_flask_base(requirements_path: str = "requirements.txt") -> bool:
+    """True if requirements.txt installs flask-base (PyPI name or release wheel URL)."""
+    from pathlib import Path
+
+    path = Path(requirements_path)
+    if not path.is_file():
+        return False
+    text = path.read_text(encoding="utf-8").lower()
+    return "flask-base" in text or "flask_base" in text
+
+
 def deploy_checks() -> None:
     """
     Perform all safety checks for deploying to App Engine.
@@ -85,7 +96,13 @@ def deploy_checks() -> None:
     
     # Validate environment variables
     validate_environment()
+
+    if not _requirements_include_flask_base():
+        print("ERROR: requirements.txt must install flask-base for App Engine deploy.")
+        print("Add a GitHub Release wheel URL or flask-base==VERSION. See docs/GETTING_STARTED.md Step 4.")
+        sys.exit(1)
     
     print("✓ gcloud CLI found")
+    print("✓ requirements.txt includes flask-base")
     print("✓ Environment checks passed")
 

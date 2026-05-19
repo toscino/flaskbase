@@ -43,9 +43,9 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/yourusername/flask-base"
-Documentation = "https://github.com/yourusername/flask-base#readme"
-Repository = "https://github.com/yourusername/flask-base"
+Homepage = "https://github.com/toscino/flaskbase"
+Documentation = "https://github.com/toscino/flaskbase#readme"
+Repository = "https://github.com/toscino/flaskbase"
 
 [tool.setuptools.packages.find]
 where = ["."]

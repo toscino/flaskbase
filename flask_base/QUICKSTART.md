@@ -4,7 +4,19 @@ FlaskBase is a minimal library for quickly creating Flask web apps with Firestor
 
 ## Installation
 
-Copy the `flask_base/` folder into your project directory.
+**Monorepo / library development** (editable, from repo root):
+
+```powershell
+pip install -r requirements-dev.txt
+```
+
+**Production / App Engine** (pinned GitHub Release wheel in your app's `requirements.txt`):
+
+```text
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
+```
+
+Tag new library versions on GitHub (`v0.2.1`, …) and update the URL. See [GETTING_STARTED.md](../docs/GETTING_STARTED.md) Step 5.
 
 ## Your First App
 
