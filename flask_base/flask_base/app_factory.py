@@ -368,9 +368,14 @@ class FlaskApp:
     def _register_package_static(self) -> None:
         """Serve flask-base packaged assets (e.g. flask_base.js) at /static/flask_base/."""
         package_static = Path(__file__).parent / "static"
+        project_static = Path.cwd() / "static" / "flask_base"
 
         @self.app.route("/static/flask_base/<path:filename>")
         def flask_base_static(filename: str) -> Any:
+            # Prefer project override (works when wheel omitted static assets)
+            candidate = project_static / filename
+            if candidate.is_file():
+                return send_from_directory(project_static, filename)
             return send_from_directory(package_static, filename)
 
     def start(self, host: str = "0.0.0.0", port: int = 8080, debug: bool = True) -> None:

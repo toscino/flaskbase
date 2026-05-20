@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "flask-base"
-version = "0.3.0"
+version = "0.3.1"
 description = "Minimal Flask library for quickly creating web apps with Firestore, authentication, and GCP deployment"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -52,7 +52,7 @@ where = ["."]
 include = ["flask_base*"]
 
 [tool.setuptools.package-data]
-"flask_base.flask_base" = ["templates/**/*.html", "static/**/*"]
+flask_base = ["templates/**/*.html", "static/**/*"]
 
 [tool.black]
 line-length = 88

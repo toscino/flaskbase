@@ -23,7 +23,8 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ flask_base_js }}"></script>
+{# Bundled in example/static — production wheel v0.3.0 omitted package static assets #}
+<script src="/static/js/flask_base.js"></script>
 <script>
 const notesList = document.getElementById('notes-list');
 const notesError = document.getElementById('notes-error');
