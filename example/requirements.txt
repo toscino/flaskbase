@@ -4,5 +4,5 @@
 #
 # Library contributors only: pip install -r requirements-dev.txt  (editable -e flask_base)
 
-flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.3.0/flask_base-0.3.0-py3-none-any.whl
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.3.1/flask_base-0.3.1-py3-none-any.whl
 gunicorn>=21.0.0
