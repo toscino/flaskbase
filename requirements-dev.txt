@@ -1,5 +1,6 @@
-# Install from repo root with venv active:
-#   pip install -r requirements-dev.txt
+# Library contributors only — live-edit flask_base/ in this monorepo.
+# Clone users and normal local runs: pip install -r example/requirements.txt
+#   (same pinned GitHub Release wheel as App Engine deploy)
 
 -e flask_base
 pytest>=7.0.0

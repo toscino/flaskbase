@@ -4,19 +4,27 @@ FlaskBase is a minimal library for quickly creating Flask web apps with Firestor
 
 ## Installation
 
-**Monorepo / library development** (editable, from repo root):
+**Default** (example app — from `example/` with venv active):
+
+```powershell
+pip install -r requirements.txt
+```
+
+Run the demo: [example/GETTING_STARTED.md](../example/GETTING_STARTED.md). Library docs: [docs/README.md](../docs/README.md).
+
+**Library development in this monorepo** (editable, from repo root):
 
 ```powershell
 pip install -r requirements-dev.txt
 ```
 
-**Production / App Engine** (pinned GitHub Release wheel in your app's `requirements.txt`):
+**Any app's `requirements.txt`** (pinned GitHub Release wheel):
 
 ```text
-flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.3.0/flask_base-0.3.0-py3-none-any.whl
 ```
 
-Tag new library versions on GitHub (`v0.2.1`, …) and update the URL. See [GETTING_STARTED.md](../docs/GETTING_STARTED.md) Step 5.
+Tag new library versions on GitHub (`v0.2.1`, …) and update the URL. See [docs/PUBLISHING.md](../docs/PUBLISHING.md).
 
 ## Your First App
 
@@ -170,6 +178,57 @@ app_manager.page("profile.html", auth=True) # Any authenticated user
 ```
 
 Auto-infers route from template name: `home.html` → `/home`
+
+### Templates and `base.html`
+
+FlaskBase ships a single layout at `flask_base/templates/base.html`. Your app's `templates/` directory is checked first, so you can override the whole file if needed.
+
+**New app checklist:**
+
+1. Register pages in `app.py` with `app_manager.page(...)` (auth pages appear in the nav menu).
+2. Create templates that extend the layout:
+
+```html
+{% extends "base.html" %}
+{% block title %}Notes - {{ app_name }}{% endblock %}
+{% block nav_title %}Notes{% endblock %}
+{% block content %}
+<form class="form-group">
+  <label for="text">Note</label>
+  <input id="text" type="text">
+</form>
+<button class="btn">Add</button>
+<ul class="item-list">
+  <li class="note-item">...</li>
+</ul>
+{% endblock %}
+{% block scripts %}
+<script>/* page-specific JS */</script>
+{% endblock %}
+```
+
+**Shared CSS classes:** `.btn`, `.btn-secondary`, `.form-group`, `.form-row`, `.card-item`, `.note-item`, `.info-banner`, `.empty-state`, `.error-message`, `.text-muted`, `.code-hint`
+
+**Theming:** override `:root` variables in `{% block styles %}`:
+
+```html
+{% block styles %}
+<style>
+  :root {
+    --fb-primary: #6f42c1;
+    --fb-primary-hover: #5a32a3;
+  }
+</style>
+{% endblock %}
+```
+
+**Nav extension blocks:** `nav_title`, `nav_subtitle`, `nav_trailing` (for app-specific header chrome).
+
+**Built-in shell behavior:** strips `?key=` from the URL after sign-in, filters permission-gated nav links via `/api/permissions`, supports `?kiosk=1` to hide the nav.
+
+**Client helpers:** load `/static/flask_base/js/flask_base.js` (or `{{ flask_base_js }}` in templates) for `FlaskBase.apiFetch`, `FlaskBase.escapeHtml`, `FlaskBase.showMessage`, and `FlaskBase.initSwipeList` (swipe-to-pin/delete rows; see example Notes page).
+
+See `example/templates/` and the runnable `/patterns` page in the example app.
 
 ### Route Registration
 

@@ -48,6 +48,23 @@ if __name__ == '__main__':
 
 That's it! Total boilerplate: **3 lines**.
 
+## Templates
+
+Put HTML in your project's `templates/` folder. Every page extends the library layout:
+
+```html
+{% extends "base.html" %}
+{% block title %}My Page - {{ app_name }}{% endblock %}
+{% block content %}
+  <h1>Hello</h1>
+  <button class="btn">Save</button>
+{% endblock %}
+```
+
+- **`app_manager.page("foo.html", auth=True)`** adds `/foo` to the hamburger menu.
+- Override **`{% block nav_title %}`** for the in-app header (browser tab uses `{% block title %}`).
+- Theme colors: set CSS variables in **`{% block styles %}`** (see `example/templates/`).
+
 ## Configuration
 
 Create a `.env` file:
@@ -84,7 +101,7 @@ env_variables:
 - **Rate limiting** - Per-route or global limits
 - **Navigation** - Auto-generates from page registrations
 - **Logging** - Unified logger via `app_manager.logger`
-- **Templates** - Auto-discovery of project templates
+- **Templates** - Shared `base.html` layout, design system CSS, and auto-discovery of project templates
 - **Deployment** - Built-in App Engine deployment support
 
 ## Documentation

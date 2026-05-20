@@ -1,15 +1,19 @@
-# Getting started (step by step)
+# Getting started (example app)
 
-This guide assumes **Windows** and that you open terminals in **Cursor** (Terminal → New Terminal). Mac/Linux notes appear where commands differ.
+Get the **example app** running on your machine and (optionally) on Google App Engine. This guide covers Python, `gcloud`, Firestore, `.env`, local run, and deploy — nothing about publishing the flask-base library.
+
+Library docs (installing flask-base in other projects, releases, API): **[docs/README.md](../docs/README.md)**.
+
+Already have Python, `gcloud`, and a GCP project? See the [repo README](../README.md) for a short quick start.
+
+This guide assumes **Windows** and **Cursor** (Terminal → New Terminal). Mac/Linux notes appear where commands differ.
 
 You will:
 
-1. Set up Python and this project on your machine  
-2. Set up Google Cloud (Firestore, App Engine, billing)  
-3. Run the example app in your browser  
+1. Set up Python and install dependencies  
+2. Set up Google Cloud (`gcloud`, billing, App Engine, Firestore)  
+3. Run the example in your browser  
 4. (Optional) Deploy to App Engine  
-
-Before first App Engine deploy: publish a GitHub Release wheel — [Step 5](#step-5-publish-flask-base-github-release).
 
 ---
 
@@ -17,7 +21,7 @@ Before first App Engine deploy: publish a GitHub Release wheel — [Step 5](#ste
 
 | You need | Notes |
 |----------|--------|
-| This repo on your PC | e.g. `C:\Users\ianmb\Code\FlaskBase` |
+| This repo on your PC | e.g. `...\flaskbase\example` (you will run commands from here) |
 | Python 3.10+ | Check with `python --version` |
 | A Google account | For GCP (free tier is enough for testing) |
 | ~30 minutes | First time through |
@@ -36,26 +40,29 @@ python --version
 
 You want **3.10, 3.11, or 3.12**. If `python` is not found, install from [python.org](https://www.python.org/downloads/) and tick **“Add python.exe to PATH”**.
 
-### 1.2 Go to the project folder
+### 1.2 Clone the repo and open this folder
 
 ```powershell
-cd C:\Users\ianmb\Code\FlaskBase
+git clone https://github.com/toscino/flaskbase.git
+cd flaskbase\example
 ```
 
-Use your actual path if it is different.
+Use your actual clone path if it is different. On GitHub, open the **`example/`** folder — this file and [README.md](README.md) are the entry points for the runnable app.
 
 ### 1.3 Create a virtual environment (venv)
 
-A venv keeps this project’s packages separate from everything else.
+Create the venv at the **repo root** (parent of `example/`) so it is shared if you also work on the library. From `example/`:
 
 ```powershell
+cd ..
 python -m venv .venv
 ```
 
-Activate it (you must do this in **each new terminal**):
+Activate it (do this in **each new terminal**; adjust path if your venv lives elsewhere):
 
 ```powershell
 .\.venv\Scripts\Activate.ps1
+cd example
 ```
 
 You should see `(.venv)` at the start of the prompt.
@@ -63,24 +70,22 @@ You should see `(.venv)` at the start of the prompt.
 Mac/Linux:
 
 ```bash
+cd ..
 python3 -m venv .venv
 source .venv/bin/activate
+cd example
 ```
 
-### 1.4 Install project dependencies
+### 1.4 Install dependencies
 
-With `(.venv)` active and your folder at the **repo root** (`FlaskBase`, not `example`):
+With `(.venv)` active and your current directory **`example/`**:
 
 ```powershell
 pip install --upgrade pip
-pip install -r requirements-dev.txt
+pip install -r requirements.txt
 ```
 
-This installs:
-
-- `flask-base` (editable, from the `flask_base/` folder)  
-- `pytest`  
-- `gunicorn`  
+This installs **flask-base** (pinned GitHub Release wheel in `requirements.txt`) and `gunicorn`. The same file is used when you deploy to App Engine.
 
 Check the install:
 
@@ -92,7 +97,7 @@ You should see `OK`.
 
 ### 1.5 Point Cursor at the venv (recommended)
 
-This repo includes [`.vscode/settings.json`](../.vscode/settings.json) so new terminals use `.venv` automatically.
+Open the **repo root** (`flaskbase`, not only `example`) in Cursor so [`.vscode/settings.json`](../.vscode/settings.json) applies. New terminals use `.venv` at the repo root automatically.
 
 If the status bar still shows the wrong Python:
 
@@ -101,14 +106,11 @@ If the status bar still shows the wrong Python:
 
 ### 1.6 Create your `.env` file
 
-The example app reads secrets from `example\.env`.
-
 ```powershell
-cd example
 copy .env.example .env
 ```
 
-Open `example\.env` in Cursor and edit it.
+Open `.env` in Cursor and edit it.
 
 #### Generate random secrets
 
@@ -147,7 +149,7 @@ Save the file. **Never commit `.env`** — it is already in `.gitignore`.
 
 - [ ] `(.venv)` shows in the terminal  
 - [ ] `python -c "from flask_base import FlaskApp"` works  
-- [ ] `example\.env` exists with your own `FLASK_SECRET` and `ADMIN_KEY`  
+- [ ] `.env` exists with your own `FLASK_SECRET` and `ADMIN_KEY`  
 
 You can run the app **without** GCP for a quick smoke test (home page may work; Notes needs Firestore from Step 2).
 
@@ -186,7 +188,7 @@ A browser window opens — sign in with the Google account you use for GCP.
 3. Name it something like `flaskbase-test`  
 4. Note the **Project ID** (often similar to the name, e.g. `flaskbase-test-123456`) — not the display name  
 
-Put that **Project ID** in `example\.env` (this is what the app uses):
+Put that **Project ID** in `.env` (this is what the app uses):
 
 ```env
 GOOGLE_CLOUD_PROJECT=flaskbase-test-123456
@@ -213,7 +215,7 @@ A GCP **project** is not the same as an **App Engine app**. Do this **before** F
 
 **Region:** App Engine uses `us-central` (not `us-central1`). Firestore in Step 2.6 uses `us-central1` — they pair for US Central. You cannot change the App Engine region later.
 
-Confirm project (must match `GOOGLE_CLOUD_PROJECT` in `example\.env`):
+Confirm project (must match `GOOGLE_CLOUD_PROJECT` in `.env`):
 
 ```powershell
 gcloud config get-value project
@@ -286,7 +288,7 @@ Sign in when the browser opens. This stores credentials your Python code uses lo
 
 ### 2.8 Step 2 checklist
 
-- [ ] `example\.env` has your real `GOOGLE_CLOUD_PROJECT`  
+- [ ] `.env` has your real `GOOGLE_CLOUD_PROJECT`  
 - [ ] Billing linked to the project  
 - [ ] `gcloud app describe` succeeds (App Engine initialized **before** Firestore)  
 - [ ] Firestore database exists (**Native** mode, `us-central1` — verify with `gcloud firestore databases list`)  
@@ -299,11 +301,7 @@ Sign in when the browser opens. This stores credentials your Python code uses lo
 
 ### 3.1 Start the server
 
-```powershell
-cd C:\Users\ianmb\Code\FlaskBase\example
-```
-
-(Adjust path if needed. Venv should still be active — if not, activate from repo root first.)
+From `example/` with venv active:
 
 ```powershell
 python app.py --run
@@ -318,9 +316,11 @@ Admin: http://127.0.0.1:8080/admin?key=...
 
 ### 3.2 Open the app in your browser
 
-Click or paste the **Alice** link (or add `?key=alice-secret` to the home URL if you changed the key in `.env`).
+- **`/`** — public landing (sign-in help if you have no key)  
+- **`/?key=alice-secret`** — authenticates, then landing with links to Home and Notes  
+- **`/home`** — authenticated home (after sign-in)
 
-You should see the **Home** page and your signed-in name.
+Click the **Alice** link from the terminal, or open `http://127.0.0.1:8080/?key=alice-secret`, then **Go to Home**.
 
 ### 3.3 Try Notes (Firestore)
 
@@ -335,10 +335,11 @@ In the terminal: `Ctrl+C`.
 
 ### 3.5 Run tests (optional)
 
-From the **repo root**:
+From the **repo root** (install pytest once if you have not already):
 
 ```powershell
-cd C:\Users\ianmb\Code\FlaskBase
+cd ..
+pip install pytest
 python -m pytest tests/ -v
 ```
 
@@ -348,7 +349,7 @@ python -m pytest tests/ -v
 
 Complete [Step 2.5](#25-initialize-app-engine-before-firestore) first. If deploy says the project has no App Engine application, you skipped that step or created Firestore first (see troubleshooting).
 
-**Before the first deploy:** publish `flask-base` as a [GitHub Release](https://github.com/toscino/flaskbase/releases) wheel (see [Step 5](#step-5-publish-flask-base-github-release)). App Engine installs it from the pinned URL in `example/requirements.txt`, not from your local editable install.
+App Engine installs dependencies from `requirements.txt` (including the pinned flask-base wheel). You do not need to change that file unless you are [publishing a new library version](../docs/PUBLISHING.md).
 
 ### Deploy config (soft overview)
 
@@ -356,16 +357,15 @@ Three files, three jobs — easy to mix up at first:
 
 | File | Used when | In git? |
 |------|-----------|---------|
-| `example\.env` | `python app.py --run` on your PC | No (gitignored) |
-| `example\app.yaml` | Example / template only; **not** local dev | Yes (placeholders are fine) |
-| `example\app.production.yaml` | `python app.py --deploy` to App Engine | No (you create this) |
+| `.env` | `python app.py --run` on your PC | No (gitignored) |
+| `app.yaml` | Template only; **not** local dev | Yes (placeholders are fine) |
+| `app.production.yaml` | `python app.py --deploy` to App Engine | No (you create this) |
 
 **`app.yaml` is not your dev config.** Local dev uses `.env` only. The committed `app.yaml` is there so you can see what a deploy file looks like (runtime, scaling, env var names). Obvious placeholder secrets like `replace-with-admin-key` are fine — you are not meant to put real production secrets in it.
 
 **To upload to the cloud**, create `app.production.yaml` once by copying the committed template (same structure as `app.yaml`):
 
 ```powershell
-cd example
 copy app.yaml app.production.yaml
 ```
 
@@ -383,7 +383,7 @@ App Engine never reads `.env` on the server. Use the **same variable names** as 
 
 ### Deploy
 
-From `example\` (with `app.production.yaml` in place):
+From this folder (with `app.production.yaml` in place):
 
 ```powershell
 python app.py --deploy
@@ -395,54 +395,11 @@ Visit `https://YOUR_PROJECT_ID.appspot.com/?key=your-production-user-secret` (th
 
 ### Step 4 checklist
 
-- [ ] GitHub Release `v0.2.0` exists with wheel asset (Step 5)  
-- [ ] `example/requirements.txt` pins that Release wheel URL  
 - [ ] `app.production.yaml` exists with production secrets  
+- [ ] `FLASK_BASE_KEY_PREFIX` matches your key env var names (e.g. `EXAMPLE_KEY_` + `EXAMPLE_KEY_ALICE`)  
 - [ ] Step 2.5 App Engine initialized  
 - [ ] Deploy succeeded  
-- [ ] Home and Notes work on the live URL with `?key=`
-
-### Build your own app
-
-Copy patterns from `example/`, read [QUICKSTART.md](../flask_base/QUICKSTART.md).
-
----
-
-## Step 5: Publish flask-base (GitHub Release)
-
-Library repo: [github.com/toscino/flaskbase](https://github.com/toscino/flaskbase). Production apps install a **pinned wheel URL** from GitHub Releases (not PyPI). Local dev still uses editable install from `requirements-dev.txt`.
-
-### First release (manual or CI)
-
-**Option A — tag push (recommended after CI is on `main`):**
-
-```powershell
-cd flask_base
-pip install build
-python -m build
-cd ..
-git tag v0.2.0
-git push origin v0.2.0
-```
-
-GitHub Actions ([`.github/workflows/publish.yml`](../.github/workflows/publish.yml)) builds the wheel and attaches it to the Release.
-
-**Option B — manual upload:** GitHub → Releases → **Create release** → tag `v0.2.0` → upload `flask_base/dist/flask_base-0.2.0-py3-none-any.whl`.
-
-### Pin the wheel in your app
-
-In `example/requirements.txt` (already set for this repo):
-
-```text
-flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
-gunicorn>=21.0.0
-```
-
-Bump the URL when you tag `v0.2.1`, etc. Same URL works for every GCP project — no per-project registry.
-
-### Optional: private Artifact Registry
-
-Use GCP Artifact Registry only if the library must stay private. See historical notes in git history or add `gcloud artifacts repositories create` per [Google Cloud docs](https://cloud.google.com/artifact-registry/docs/python/store-python).
+- [ ] `/` shows landing; `/?key=...` then Home and Notes work on the live URL  
 
 ---
 
@@ -450,27 +407,24 @@ Use GCP Artifact Registry only if the library must stay private. See historical 
 
 ### `ModuleNotFoundError: flask_base`
 
-**Local:** Activate venv: `.\.venv\Scripts\Activate.ps1` — from repo root: `pip install -r requirements-dev.txt`  
+**Local:** Activate venv, `cd example`, then: `pip install -r requirements.txt` (Step 1.4)  
 
-**App Engine (502 / nginx / upstream connect error):** Check logs (`gcloud app logs read -s default --limit=20`). If you see `No module named 'flask_base'`, ensure `example/requirements.txt` includes the GitHub Release wheel URL and that Release exists on GitHub before redeploying.
-
-### `../flask_base is not a valid editable requirement`
-
-You ran `pip install -r example\requirements.txt` from the **wrong folder**. Use `requirements-dev.txt` from the **repo root** (Step 1.4).
+**App Engine (502 / nginx / upstream connect error):** Check logs (`gcloud app logs read -s default --limit=20`). If you see `No module named 'flask_base'`, see [docs/PUBLISHING.md](../docs/PUBLISHING.md) — usually a missing or broken wheel URL in `requirements.txt`.
 
 ### `FLASK_SECRET` / `ADMIN_KEY` errors
 
-- File must be `example\.env` (not only `.env` in the root)  
-- Run the app from the `example` folder so `.env` is found  
+- `.env` must live in this `example/` folder (copy from `.env.example`)  
+- Run `python app.py --run` from `example/`, not the repo root  
 
 ### Port 8080 already in use
 
 Stop the other app using 8080, or in `.env` set `PORT=8081` and use that port in the browser.
 
-### 404 on pages in the browser
+### 404 or “page not found” in the browser
 
-- Add `?key=alice-secret` (or whatever secret you set in `EXAMPLE_KEY_ALICE` **before** the colon)  
-- `EXAMPLE_KEY_ALICE=alice-secret:view` → use `?key=alice-secret`  
+- Open `/` — public landing explains sign-in  
+- Add `?key=alice-secret` (secret is the part **before** the colon in `EXAMPLE_KEY_ALICE=alice-secret:view`)  
+- Ensure `FLASK_BASE_KEY_PREFIX` matches key variable names in `.env` / `app.production.yaml` (e.g. prefix `EXAMPLE_KEY_` with `EXAMPLE_KEY_ALICE`, not `EXAMPLE_PROJ_`)  
 
 ### Firestore / permission errors on Notes
 
@@ -545,7 +499,6 @@ gcloud auth application-default login
 **6. Deploy**
 
 ```powershell
-cd example
 python app.py --deploy
 ```
 
@@ -554,10 +507,10 @@ python app.py --deploy
 ## Quick reference (daily use)
 
 ```powershell
-cd C:\Users\ianmb\Code\FlaskBase
+cd path\to\flaskbase
 .\.venv\Scripts\Activate.ps1
 cd example
 python app.py --run
 ```
 
-Browser: use the printed URL with `?key=...`.
+Browser: open `/` for the landing page, or use `?key=...` from `.env` (e.g. `/?key=alice-secret`).

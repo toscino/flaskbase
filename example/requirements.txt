@@ -1,8 +1,8 @@
-# Local development: install from repo root (not this folder):
-#   cd ..
-#   pip install -r requirements-dev.txt
+# Default install (repo root, venv active):
+#   pip install -r example/requirements.txt
+# Same pinned wheel for local runs and App Engine deploy. Bump URL when you tag a new release.
 #
-# Production (App Engine): pinned GitHub Release wheel (bump URL when you tag a new version).
+# Library contributors only: pip install -r requirements-dev.txt  (editable -e flask_base)
 
-flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
+flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.3.0/flask_base-0.3.0-py3-none-any.whl
 gunicorn>=21.0.0

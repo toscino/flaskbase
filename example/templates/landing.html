@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in - {{ app_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ app_name }}</h1>
+
+{% if session.get("authenticated") %}
+<div class="info-banner">
+    <p>You are signed in as <strong>{{ session.user_id }}</strong>.</p>
+</div>
+<p class="link-row">
+    <a href="/home">Go to Home</a>
+    <a href="/notes">Go to Notes</a>
+</p>
+{% else %}
+<p class="text-muted" style="margin-top: 1rem;">
+    This app requires a sign-in key. You are not authenticated yet.
+</p>
+<p class="text-muted text-small" style="margin-top: 1rem; line-height: 1.5;">
+    Open a link from your administrator, or add your key to the URL:
+</p>
+<p class="code-hint">?key=your-secret</p>
+<p class="text-muted text-small" style="margin-top: 1rem;">
+    Example: <code>{{ request.url_root }}?key=alice-secret</code>
+</p>
+<p class="text-muted text-small" style="margin-top: 1rem;">
+    If you expected a page here, check that production env vars use the same
+    <code>FLASK_BASE_KEY_PREFIX</code> as your key variable names
+    (e.g. <code>EXAMPLE_KEY_ALICE</code> with prefix <code>EXAMPLE_KEY_</code>).
+</p>
+{% endif %}
+{% endblock %}

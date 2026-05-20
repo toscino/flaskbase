@@ -22,7 +22,7 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 import jinja2
-from flask import Flask, jsonify, render_template, request, session, redirect
+from flask import Flask, jsonify, render_template, request, session, redirect, send_from_directory
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 
@@ -74,7 +74,8 @@ class FlaskApp:
         def inject_template_context() -> dict:
             return {
                 "app_name": self.app_name,
-                "pages": self._pages
+                "pages": self._pages,
+                "flask_base_js": "/static/flask_base/js/flask_base.js",
             }
         
         # Configure logging
@@ -120,6 +121,7 @@ class FlaskApp:
         
         # Register /api/permissions route
         self._register_permissions_route()
+        self._register_package_static()
         
         # Expose require_auth as a convenience method
         self.require_auth = self.auth_service.require_auth
@@ -362,6 +364,14 @@ class FlaskApp:
                     "authenticated": True
                 })
             return jsonify({"user_id": None, "permissions": [], "authenticated": False})
+
+    def _register_package_static(self) -> None:
+        """Serve flask-base packaged assets (e.g. flask_base.js) at /static/flask_base/."""
+        package_static = Path(__file__).parent / "static"
+
+        @self.app.route("/static/flask_base/<path:filename>")
+        def flask_base_static(filename: str) -> Any:
+            return send_from_directory(package_static, filename)
 
     def start(self, host: str = "0.0.0.0", port: int = 8080, debug: bool = True) -> None:
         """

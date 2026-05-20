@@ -2,61 +2,252 @@
 
 {% block title %}Notes - {{ app_name }}{% endblock %}
 
+{% block nav_title %}Notes{% endblock %}
+
 {% block content %}
-<main style="padding: 2rem; max-width: 640px; margin: 0 auto;">
-    <h1>Notes</h1>
-    <form id="note-form" style="margin-top: 1.5rem; display: flex; gap: 0.5rem;">
-        <input type="text" id="note-text" placeholder="New note..." required
-               style="flex: 1; padding: 0.5rem; border-radius: 4px; border: 1px solid #444; background: #111; color: #fff;">
-        <button type="submit" style="padding: 0.5rem 1rem; cursor: pointer;">Add</button>
-    </form>
-    <ul id="notes-list" style="margin-top: 1.5rem; list-style: none;"></ul>
-    <p id="notes-error" style="color: #f66; margin-top: 1rem; display: none;"></p>
-</main>
+<h1>Notes</h1>
+<p class="text-muted text-small" style="margin-bottom: 1rem;">
+    Swipe right to pin, left to delete — then tap the button.
+</p>
+<form id="note-form" class="form-row" style="margin-bottom: 1.5rem;">
+    <div class="form-group">
+        <label for="note-text" class="text-small">New note</label>
+        <input type="text" id="note-text" placeholder="What do you want to remember?" required>
+    </div>
+    <div class="form-actions" style="margin-top: 0; text-align: left;">
+        <button type="submit" class="btn">Add</button>
+    </div>
+</form>
+<ul id="notes-list" class="swipe-list"></ul>
+<p id="notes-error" class="error-message" style="display: none;"></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ flask_base_js }}"></script>
 <script>
+const notesList = document.getElementById('notes-list');
+const notesError = document.getElementById('notes-error');
+
+function formatNoteDate(createdAt) {
+    if (!createdAt) return '';
+    const d = new Date(createdAt);
+    return isNaN(d.getTime()) ? '' : d.toLocaleString();
+}
+
+function renderNoteItem(note) {
+    const when = formatNoteDate(note.created_at);
+    const pinLabel = note.pinned ? 'Unpin?' : 'Pin?';
+    const pinnedTag = note.pinned
+        ? '<span class="category">Pinned</span>'
+        : '';
+    return (
+        '<li class="task-item" data-note-id="' + note.id + '">' +
+            '<div class="task-content">' +
+                '<div class="task-info">' +
+                    '<span class="task-text">' + FlaskBase.escapeHtml(note.text || '') + '</span>' +
+                    '<div class="task-meta">' +
+                        (when ? '<span>' + when + '</span>' : '') +
+                        pinnedTag +
+                    '</div>' +
+                '</div>' +
+            '</div>' +
+            '<div class="swipe-confirmation">' +
+                '<button type="button" class="complete-confirm-btn">' + pinLabel + '</button>' +
+            '</div>' +
+            '<div class="swipe-confirmation abandon">' +
+                '<button type="button" class="abandon-confirm-btn">Delete?</button>' +
+            '</div>' +
+        '</li>'
+    );
+}
+
 async function loadNotes() {
-    const list = document.getElementById('notes-list');
-    const err = document.getElementById('notes-error');
-    err.style.display = 'none';
+    FlaskBase.showMessage(notesError, '', 'error');
     try {
-        const res = await fetch('/api/notes');
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || res.statusText);
-        list.innerHTML = (data.notes || []).map(n => {
-            const when = n.created_at ? new Date(n.created_at).toLocaleString() : '';
-            return `<li style="padding: 0.75rem 0; border-bottom: 1px solid #333;">
-                <div>${escapeHtml(n.text || '')}</div>
-                <small style="color: #888;">${when}</small>
-            </li>`;
-        }).join('') || '<li style="color:#888;">No notes yet.</li>';
+        const data = await FlaskBase.apiFetch('/api/notes');
+        const notes = data.notes || [];
+        if (notes.length === 0) {
+            notesList.innerHTML = '<li class="empty-state">No notes yet.</li>';
+            return;
+        }
+        notesList.innerHTML = notes.map(renderNoteItem).join('');
     } catch (e) {
-        err.textContent = e.message;
-        err.style.display = 'block';
+        FlaskBase.showMessage(notesError, e.message, 'error');
     }
 }
 
-function escapeHtml(s) {
-    const d = document.createElement('div');
-    d.textContent = s;
-    return d.innerHTML;
-}
-
-document.getElementById('note-form').addEventListener('submit', async (e) => {
+document.getElementById('note-form').addEventListener('submit', async function (e) {
     e.preventDefault();
     const input = document.getElementById('note-text');
     const text = input.value.trim();
     if (!text) return;
-    const res = await fetch('/api/notes', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ text }),
-    });
-    if (res.ok) {
+    try {
+        await FlaskBase.apiFetch('/api/notes', { method: 'POST', body: { text: text } });
         input.value = '';
-        loadNotes();
+        await loadNotes();
+    } catch (err) {
+        FlaskBase.showMessage(notesError, err.message, 'error');
     }
 });
 
 loadNotes();
+
+// Swipe + confirm buttons (from templateold/tasks.html)
+notesList.addEventListener('click', async function (event) {
+    if (event.target.classList.contains('complete-confirm-btn')) {
+        const noteItem = event.target.closest('.task-item');
+        const noteId = noteItem.dataset.noteId;
+        const confirmation = noteItem.querySelector('.swipe-confirmation:not(.abandon)');
+        confirmation.classList.remove('show');
+
+        const isPinned = noteItem.querySelector('.task-meta .category') !== null;
+        try {
+            await FlaskBase.apiFetch('/api/notes/' + encodeURIComponent(noteId), {
+                method: 'PATCH',
+                body: { pinned: !isPinned },
+            });
+            const taskContent = noteItem.querySelector('.task-content');
+            taskContent.style.transition = 'transform 0.3s ease';
+            taskContent.style.transform = 'translateX(0)';
+            await loadNotes();
+        } catch (err) {
+            FlaskBase.showMessage(notesError, err.message, 'error');
+        }
+        return;
+    }
+
+    if (event.target.classList.contains('abandon-confirm-btn')) {
+        const noteItem = event.target.closest('.task-item');
+        const noteId = noteItem.dataset.noteId;
+        const abandonConfirmation = noteItem.querySelector('.swipe-confirmation.abandon');
+        abandonConfirmation.classList.remove('show');
+
+        noteItem.style.opacity = '0.5';
+        noteItem.style.transform = 'translateX(-20px)';
+
+        try {
+            await FlaskBase.apiFetch('/api/notes/' + encodeURIComponent(noteId), {
+                method: 'DELETE',
+            });
+            setTimeout(function () {
+                noteItem.remove();
+                if (!notesList.querySelector('.task-item')) {
+                    notesList.innerHTML = '<li class="empty-state">No notes yet.</li>';
+                }
+            }, 400);
+        } catch (err) {
+            noteItem.style.opacity = '1';
+            noteItem.style.transform = 'translateX(0)';
+            noteItem.style.textDecoration = 'none';
+            FlaskBase.showMessage(notesError, err.message, 'error');
+        }
+    }
+});
+
+let startX = 0;
+let currentX = 0;
+let isDragging = false;
+let currentNoteItem = null;
+
+function startDrag(event, clientX) {
+    if (event.target.classList.contains('complete-confirm-btn') ||
+        event.target.classList.contains('abandon-confirm-btn')) {
+        return;
+    }
+    const noteItem = event.target.closest('.task-item');
+    if (noteItem) {
+        startX = clientX;
+        currentX = clientX;
+        isDragging = true;
+        currentNoteItem = noteItem;
+        const taskContent = noteItem.querySelector('.task-content');
+        taskContent.style.transition = 'none';
+        noteItem.style.cursor = 'grabbing';
+    }
+}
+
+function updateDrag(clientX) {
+    if (!isDragging || !currentNoteItem) return;
+
+    currentX = clientX;
+    const deltaX = currentX - startX;
+    const absDeltaX = Math.abs(deltaX);
+    const maxSwipe = 100;
+
+    if (deltaX > 0) {
+        const swipeDistance = Math.min(deltaX, maxSwipe);
+        const taskContent = currentNoteItem.querySelector('.task-content');
+        taskContent.style.transform = 'translateX(' + swipeDistance + 'px)';
+
+        const confirmation = currentNoteItem.querySelector('.swipe-confirmation:not(.abandon)');
+        const abandonConfirmation = currentNoteItem.querySelector('.swipe-confirmation.abandon');
+        if (abandonConfirmation) abandonConfirmation.classList.remove('show');
+        if (swipeDistance > 70) confirmation.classList.add('show');
+        else confirmation.classList.remove('show');
+    } else if (deltaX < 0) {
+        const swipeDistance = Math.max(deltaX, -maxSwipe);
+        const taskContent = currentNoteItem.querySelector('.task-content');
+        taskContent.style.transform = 'translateX(' + swipeDistance + 'px)';
+
+        const abandonConfirmation = currentNoteItem.querySelector('.swipe-confirmation.abandon');
+        const confirmation = currentNoteItem.querySelector('.swipe-confirmation:not(.abandon)');
+        if (confirmation) confirmation.classList.remove('show');
+        if (absDeltaX > 70) abandonConfirmation.classList.add('show');
+        else abandonConfirmation.classList.remove('show');
+    }
+}
+
+function endDrag() {
+    if (!isDragging || !currentNoteItem) return;
+
+    const deltaX = currentX - startX;
+    const absDeltaX = Math.abs(deltaX);
+    const confirmation = currentNoteItem.querySelector('.swipe-confirmation:not(.abandon)');
+    const abandonConfirmation = currentNoteItem.querySelector('.swipe-confirmation.abandon');
+    const taskContent = currentNoteItem.querySelector('.task-content');
+
+    if (absDeltaX < 80) {
+        taskContent.style.transition = 'transform 0.3s ease';
+        taskContent.style.transform = 'translateX(0)';
+        if (confirmation) confirmation.classList.remove('show');
+        if (abandonConfirmation) abandonConfirmation.classList.remove('show');
+    }
+
+    currentNoteItem.style.cursor = '';
+    isDragging = false;
+    currentNoteItem = null;
+}
+
+notesList.addEventListener('touchstart', function (event) {
+    startDrag(event, event.touches[0].clientX);
+});
+
+notesList.addEventListener('touchmove', function (event) {
+    updateDrag(event.touches[0].clientX);
+});
+
+notesList.addEventListener('touchend', function () {
+    endDrag();
+});
+
+notesList.addEventListener('mousedown', function (event) {
+    if (!event.target.classList.contains('complete-confirm-btn') &&
+        !event.target.classList.contains('abandon-confirm-btn')) {
+        startDrag(event, event.clientX);
+        event.preventDefault();
+    }
+});
+
+notesList.addEventListener('mousemove', function (event) {
+    updateDrag(event.clientX);
+});
+
+notesList.addEventListener('mouseup', function () {
+    endDrag();
+});
+
+notesList.addEventListener('dragstart', function (event) {
+    event.preventDefault();
+});
 </script>
 {% endblock %}

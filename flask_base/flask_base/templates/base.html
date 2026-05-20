@@ -5,42 +5,96 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{{ app_name }}{% endblock %}</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --fb-primary: #007bff;
+            --fb-primary-hover: #0056b3;
+            --fb-primary-focus: rgba(0, 123, 255, 0.25);
+            --fb-bg: #f0f2f5;
+            --fb-surface: #ffffff;
+            --fb-text: #1c1e21;
+            --fb-muted: #6c757d;
+            --fb-border: #e0e0e0;
+            --fb-input-border: #ced4da;
+            --fb-danger: #dc3545;
+            --fb-danger-hover: #c82333;
+            --fb-success: #28a745;
+            --fb-success-hover: #218838;
+            --fb-secondary: #6c757d;
+            --fb-secondary-hover: #545b62;
+            --fb-nav-active-bg: #e3f2fd;
+            --fb-nav-active-text: #1976d2;
+            --fb-banner-accent: #0c5460;
+            --fb-overlay: rgba(0, 0, 0, 0.25);
         }
 
-body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background-color: #000;
-    color: #fff;
-    min-height: 100vh;
-}
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
-        /* Navigation Bar */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--fb-bg);
+            color: var(--fb-text);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .app-container {
+            width: 100%;
+            max-width: 640px;
+            background-color: var(--fb-surface);
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+
+        /* Navigation */
         .nav-bar {
-            background-color: #1a1a1a;
-            border-bottom: 1px solid #333;
+            background-color: var(--fb-surface);
+            border-bottom: 1px solid var(--fb-border);
             padding: 15px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            width: 100%;
-            box-sizing: border-box;
+            position: relative;
+            gap: 12px;
         }
 
-        .kiosk-mode .nav-bar {
-            display: none !important;
+        .kiosk-mode .nav-bar { display: none !important; }
+
+        .nav-title-wrap {
+            flex: 1;
+            min-width: 0;
         }
 
         .nav-title {
             font-weight: 600;
-            color: #fff;
+            color: var(--fb-text);
             font-size: 18px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .nav-user {
+            font-size: 13px;
+            color: var(--fb-muted);
+            margin-top: 2px;
+        }
+
+        .nav-user.authenticated { color: var(--fb-success); }
+
+        .nav-bar-end {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .nav-trailing {
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
 
         .hamburger {
@@ -53,14 +107,13 @@ body {
             justify-content: space-between;
             width: 24px;
             height: 18px;
-            position: relative;
-            z-index: 1001;
+            flex-shrink: 0;
         }
 
         .hamburger-line {
             width: 100%;
             height: 2px;
-            background-color: #fff;
+            background-color: var(--fb-text);
             border-radius: 1px;
             transition: all 0.3s ease;
         }
@@ -69,29 +122,27 @@ body {
             transform: rotate(45deg) translate(5px, 5px);
         }
 
-        .hamburger.active .hamburger-line:nth-child(2) {
-            opacity: 0;
-        }
+        .hamburger.active .hamburger-line:nth-child(2) { opacity: 0; }
 
         .hamburger.active .hamburger-line:nth-child(3) {
             transform: rotate(-45deg) translate(7px, -6px);
         }
 
         .nav-menu {
-            position: fixed !important;
-            top: 60px !important;
-            right: 20px !important;
-            max-width: 90vw;
-            background-color: #2a2a2a;
-            border: 1px solid #444;
+            position: absolute;
+            top: 100%;
+            right: 20px;
+            background-color: var(--fb-surface);
+            border: 1px solid var(--fb-border);
             border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
             min-width: 180px;
+            max-width: calc(100vw - 40px);
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
             transition: all 0.3s ease;
-            z-index: 1000 !important;
+            z-index: 1000;
         }
 
         .nav-menu.active {
@@ -103,23 +154,22 @@ body {
         .nav-menu-item {
             display: block;
             padding: 12px 16px;
-            color: #fff;
+            color: var(--fb-text);
             text-decoration: none;
-            border-bottom: 1px solid #444;
+            border-bottom: 1px solid #f0f0f0;
             transition: background-color 0.2s ease;
         }
 
-        .nav-menu-item:last-child {
-            border-bottom: none;
-        }
+        .nav-menu-item:last-child { border-bottom: none; }
 
         .nav-menu-item:hover {
-            background-color: #3a3a3a;
+            background-color: #f8f9fa;
+            text-decoration: none;
         }
 
         .nav-menu-item.active {
-            background-color: #4a4a4a;
-            color: #4caf50;
+            background-color: var(--fb-nav-active-bg);
+            color: var(--fb-nav-active-text);
         }
 
         .nav-overlay {
@@ -128,7 +178,7 @@ body {
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: var(--fb-overlay);
             opacity: 0;
             visibility: hidden;
             transition: all 0.3s ease;
@@ -140,157 +190,641 @@ body {
             visibility: visible;
         }
 
-        /* Content Area */
+        /* Content */
         .content-area {
             padding: 20px;
         }
 
         .kiosk-mode .content-area {
             padding: 0 !important;
-            height: 100vh !important;
-            margin: 0 !important;
+            min-height: 100vh;
         }
 
-        /* Additional styles for child templates */
-    </style>
+        .content-wrapper {
+            max-width: 900px;
+            margin: 0 auto;
+        }
 
-    {% block styles %}{% endblock %}
+        .form-container {
+            background: var(--fb-surface);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .content-area h1 {
+            margin-bottom: 16px;
+            font-size: 1.5rem;
+            color: var(--fb-text);
+        }
+
+        .content-area h2 {
+            margin: 20px 0 12px;
+            font-size: 1.15rem;
+        }
+
+        .text-muted { color: var(--fb-muted); }
+
+        .text-small { font-size: 0.9rem; }
+
+        .info { color: var(--fb-muted); font-size: 14px; margin-top: 5px; }
+
+        .link-row {
+            margin-top: 1rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .link-row a { color: var(--fb-primary); text-decoration: none; }
+        .link-row a:hover { text-decoration: underline; }
+
+        .code-hint {
+            font-family: ui-monospace, monospace;
+            background: #f8f9fa;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            border: 1px solid var(--fb-border);
+            margin-top: 0.75rem;
+            font-size: 0.9rem;
+        }
+
+        /* Buttons */
+        button, .btn {
+            background-color: var(--fb-primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background-color 0.2s ease;
+        }
+
+        button:hover, .btn:hover { background-color: var(--fb-primary-hover); }
+
+        button.secondary, button.btn-secondary, .btn.btn-secondary {
+            background-color: var(--fb-secondary);
+        }
+
+        button.secondary:hover, button.btn-secondary:hover, .btn.btn-secondary:hover {
+            background-color: var(--fb-secondary-hover);
+        }
+
+        button.delete, button.btn-danger, .btn.btn-danger {
+            background-color: var(--fb-danger);
+        }
+
+        button.delete:hover, button.btn-danger:hover, .btn.btn-danger:hover {
+            background-color: var(--fb-danger-hover);
+        }
+
+        button.success, button.btn-success, .btn.btn-success {
+            background-color: var(--fb-success);
+        }
+
+        button.success:hover, button.btn-success:hover, .btn.btn-success:hover {
+            background-color: var(--fb-success-hover);
+        }
+
+        button.full-width {
+            width: 100%;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        button:disabled, .btn:disabled {
+            background-color: var(--fb-secondary);
+            cursor: not-allowed;
+        }
+
+        .btn-sm { padding: 6px 12px; font-size: 12px; }
+
+        .form-actions, .add-goal-button-row {
+            margin-top: 15px;
+            text-align: right;
+        }
+
+        .btn-secondary.active {
+            background-color: var(--fb-primary);
+            color: white;
+        }
+
+        /* Forms */
+        .form-group { margin-bottom: 15px; }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--fb-input-border);
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.2s ease;
+            box-sizing: border-box;
+            font-family: inherit;
+            background: var(--fb-surface);
+            color: var(--fb-text);
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--fb-primary);
+            box-shadow: 0 0 0 2px var(--fb-primary-focus);
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+            margin-bottom: 0;
+        }
+
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        input[type="number"] {
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+
+        /* Cards and lists */
+        .card-item, .goal-item, .template-item, .todays-item, .block-item, .note-item {
+            background-color: var(--fb-surface);
+            border: 1px solid var(--fb-border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            padding: 15px;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .card-item:hover, .goal-item:hover, .template-item:hover,
+        .todays-item:hover, .block-item:hover, .note-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-content, .goal-content, .template-content, .todays-content, .block-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 15px;
+        }
+
+        .card-text, .goal-text, .template-text, .todays-text, .block-title {
+            flex: 1;
+            font-size: 16px;
+            line-height: 1.4;
+            color: var(--fb-text);
+        }
+
+        .card-actions, .goal-actions, .template-actions, .block-actions {
+            display: flex;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .item-list {
+            list-style: none;
+            margin-top: 1rem;
+        }
+
+        .note-meta {
+            font-size: 12px;
+            color: var(--fb-muted);
+            margin-top: 6px;
+        }
+
+        /* Messages and banners */
+        .message {
+            margin-top: 20px;
+            padding: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+
+        .message.success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .message.error {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .message, .error-message, .success-message {
+            padding: 10px 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+
+        .message.success, .success-message {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .message.error, .error-message {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .info-banner {
+            background-color: var(--fb-surface);
+            color: var(--fb-banner-accent);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid var(--fb-border);
+            border-left: 4px solid var(--fb-banner-accent);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .empty-state {
+            text-align: center;
+            color: var(--fb-muted);
+            font-style: italic;
+            padding: 40px 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px dashed #dee2e6;
+        }
+
+        .loading-state {
+            text-align: center;
+            color: var(--fb-muted);
+            padding: 20px;
+        }
+
+        .card-meta, .goal-meta, .template-meta, .block-details {
+            display: flex;
+            gap: 10px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: var(--fb-muted);
+            flex-wrap: wrap;
+        }
+
+        .card-tag, .tag {
+            padding: 2px 6px;
+            border-radius: 12px;
+            font-weight: 500;
+        }
+
+        .section-divider {
+            height: 1px;
+            background-color: var(--fb-border);
+            margin: 24px 0;
+        }
+
+        .settings-section {
+            margin-bottom: 24px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            border: 1px solid var(--fb-border);
+        }
+
+        .settings-section h3 {
+            margin: 0 0 12px;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--fb-text);
+        }
+
+        .preference-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .preference-group input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+        }
+
+        .category-tabs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--fb-border);
+            padding-bottom: 12px;
+        }
+
+        .category-tab {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 20px;
+            padding: 8px 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+        }
+
+        .category-tab:hover {
+            background-color: #e9ecef;
+            border-color: #adb5bd;
+        }
+
+        .category-tab.active {
+            background-color: var(--fb-primary);
+            color: white;
+            border-color: var(--fb-primary);
+        }
+
+        /* Swipeable list rows (tasks, notes — matches templateold task swipe) */
+        .swipe-list, #task-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .swipe-item, .task-item {
+            position: relative;
+            overflow: hidden;
+            background-color: var(--fb-surface);
+            border: 1px solid var(--fb-border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            cursor: grab;
+            user-select: none;
+            transition: box-shadow 0.2s ease;
+        }
+
+        .swipe-item:hover, .task-item:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .swipe-item:active, .task-item:active {
+            cursor: grabbing;
+        }
+
+        .swipe-item-content, .task-content {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: var(--fb-surface);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+
+        .swipe-item-info, .task-info {
+            flex-grow: 1;
+            min-width: 0;
+        }
+
+        .swipe-item-text, .task-text {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 4px;
+            line-height: 1.4;
+            color: var(--fb-text);
+        }
+
+        .swipe-item-meta, .task-meta {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            font-size: 12px;
+            color: var(--fb-muted);
+        }
+
+        .swipe-item-tag, .task-meta .category {
+            background-color: var(--fb-nav-active-bg);
+            color: var(--fb-nav-active-text);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .swipe-confirmation {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #34c759;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .swipe-confirmation.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .swipe-confirmation.abandon {
+            background-color: #ff3b30;
+        }
+
+        .complete-confirm-btn, .abandon-confirm-btn,
+        .swipe-confirm-btn {
+            background-color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        .complete-confirm-btn {
+            color: #34c759;
+        }
+
+        .complete-confirm-btn:hover, .abandon-confirm-btn:hover,
+        .swipe-confirm-btn:hover {
+            background-color: #f0f0f0;
+        }
+
+        .abandon-confirm-btn {
+            color: #ff3b30;
+        }
+
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+
+            .form-row { flex-direction: column; gap: 10px; }
+
+            .card-content, .goal-content, .template-content, .todays-content, .block-header {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .card-actions, .goal-actions, .template-actions, .block-actions {
+                align-self: flex-end;
+            }
+
+            .nav-menu { right: 10px; }
+        }
+
+        {% block styles %}{% endblock %}
+    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-    <div class="nav-bar">
-        <div class="nav-title">{{ app_name }}</div>
-        <button class="hamburger" id="hamburger-btn">
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-            <span class="hamburger-line"></span>
-        </button>
-        <div class="nav-menu" id="navMenu">
-            {% for page in pages %}
-            <a href="{{ page.route }}" class="nav-menu-item" 
-               {% if page.permission %}data-permission="{{ page.permission }}"{% endif %}>
-                {{ page.title }}
-            </a>
-            {% endfor %}
+    <div class="app-container">
+        <div class="nav-bar">
+            <div class="nav-title-wrap">
+                <div class="nav-title">{% block nav_title %}{{ app_name }}{% endblock %}</div>
+                {% block nav_subtitle %}
+                {% if session.get("authenticated") %}
+                <div class="nav-user authenticated">{{ session.user_id }}</div>
+                {% endif %}
+                {% endblock %}
+            </div>
+            <div class="nav-bar-end">
+                <div class="nav-trailing">{% block nav_trailing %}{% endblock %}</div>
+                {% if pages %}
+                <button type="button" class="hamburger" id="hamburger-btn" aria-label="Open menu">
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                    <span class="hamburger-line"></span>
+                </button>
+                {% endif %}
+            </div>
+            {% if pages %}
+            <nav class="nav-menu" id="navMenu" aria-label="Main">
+                {% for page in pages %}
+                <a href="{{ page.route }}"
+                   class="nav-menu-item{% if request.path == page.route %} active{% endif %}"
+                   {% if page.permission %}data-permission="{{ page.permission }}"{% endif %}>
+                    {{ page.title }}
+                </a>
+                {% endfor %}
+            </nav>
+            {% endif %}
         </div>
-    </div>
-    <div class="nav-overlay" id="navOverlay"></div>
 
-    <!-- Page Content -->
-    <div class="content-area">
-        {% block content %}{% endblock %}
+        <div class="nav-overlay" id="navOverlay"></div>
+
+        <main class="content-area">
+            {% block content %}{% endblock %}
+        </main>
     </div>
 
     <script>
-        // Navigation Menu JavaScript
-        function toggleNavMenu() {
+        (function initFlaskBaseShell() {
+            if (new URLSearchParams(window.location.search).get('kiosk') === '1') {
+                document.documentElement.classList.add('kiosk-mode');
+            }
+
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('key')) {
+                params.delete('key');
+                const qs = params.toString();
+                const cleanUrl = window.location.pathname + (qs ? '?' + qs : '') + window.location.hash;
+                window.history.replaceState({}, document.title, cleanUrl);
+            }
+
             const menu = document.getElementById('navMenu');
             const overlay = document.getElementById('navOverlay');
-            const hamburger = document.querySelector('.hamburger');
-            
-            menu.classList.toggle('active');
-            overlay.classList.toggle('active');
-            hamburger.classList.toggle('active');
-        }
-        
-        function closeNavMenu() {
-            const menu = document.getElementById('navMenu');
-            const overlay = document.getElementById('navOverlay');
-            const hamburger = document.querySelector('.hamburger');
-            
-            menu.classList.remove('active');
-            overlay.classList.remove('active');
-            hamburger.classList.remove('active');
-        }
-        
-        // Set up event listeners
-        document.addEventListener('DOMContentLoaded', function() {
-            const hamburgerBtn = document.getElementById('hamburger-btn');
-            const navOverlay = document.getElementById('navOverlay');
-            
-            if (hamburgerBtn) {
-                hamburgerBtn.addEventListener('click', toggleNavMenu);
+            const hamburger = document.getElementById('hamburger-btn');
+
+            function toggleNavMenu() {
+                if (!menu || !overlay || !hamburger) return;
+                menu.classList.toggle('active');
+                overlay.classList.toggle('active');
+                hamburger.classList.toggle('active');
             }
-            
-            if (navOverlay) {
-                navOverlay.addEventListener('click', closeNavMenu);
+
+            function closeNavMenu() {
+                if (!menu || !overlay || !hamburger) return;
+                menu.classList.remove('active');
+                overlay.classList.remove('active');
+                hamburger.classList.remove('active');
             }
-            
-            // Close menu when clicking on menu items
-            document.querySelectorAll('.nav-menu-item').forEach(item => {
+
+            if (hamburger) {
+                hamburger.addEventListener('click', toggleNavMenu);
+            }
+            if (overlay) {
+                overlay.addEventListener('click', closeNavMenu);
+            }
+
+            document.querySelectorAll('.nav-menu-item').forEach(function(item) {
                 item.addEventListener('click', closeNavMenu);
             });
-            
-            // Close menu when pressing Escape key
+
             document.addEventListener('keydown', function(e) {
                 if (e.key === 'Escape') {
                     closeNavMenu();
                 }
             });
 
-            // Handle URL key removal after authentication
-            // The key is validated server-side and session is created
-            // We just clean up the URL here
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('key')) {
-                // Remove key parameter from URL without page reload
-                const cleanUrl = window.location.pathname;
-                urlParams.delete('key');
-                const paramString = urlParams.toString();
-                const finalUrl = paramString ? `${cleanUrl}?${paramString}` : cleanUrl;
-                
-                // Use replaceState to avoid adding to history
-                window.history.replaceState({}, document.title, finalUrl);
-            }
-            
-            // Check for kiosk mode
-            if (urlParams.has('kiosk') && urlParams.get('kiosk') === '1') {
-                document.body.classList.add('kiosk-mode');
-            }
-
-            // Filter menu items based on permissions from session
-            filterMenuItems();
-        });
-
-        async function filterMenuItems() {
-            try {
-                const response = await fetch('/api/permissions');
-                const data = await response.json();
-                
-                const userPermissions = data.permissions || [];
-                const menuItems = document.querySelectorAll('.nav-menu-item[data-permission]');
-                
-                if (!data.authenticated) {
-                    // Not authenticated - hide all menu items
-                    menuItems.forEach(item => {
-                        item.style.display = 'none';
-                    });
-                    return;
+            document.addEventListener('click', function(e) {
+                const navigate = e.target.closest('[data-action="navigate"]');
+                if (navigate) {
+                    const url = navigate.getAttribute('data-url');
+                    if (url) window.location.href = url;
                 }
-                
-                // Check if user has admin (grants all permissions)
-                const hasAdmin = userPermissions.includes('admin');
-                
-                // Show/hide menu items based on permissions
-                menuItems.forEach(item => {
-                    const requiredPerm = item.getAttribute('data-permission');
-                    if (hasAdmin || userPermissions.includes(requiredPerm)) {
-                        item.style.display = 'block';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
-            } catch (error) {
-                // If error, hide all items to be safe
-                const menuItems = document.querySelectorAll('.nav-menu-item[data-permission]');
-                menuItems.forEach(item => {
-                    item.style.display = 'none';
-                });
+            });
+
+            async function filterNavByPermissions() {
+                const links = document.querySelectorAll('.nav-menu-item[data-permission]');
+                if (links.length === 0) return;
+                try {
+                    const res = await fetch('/api/permissions');
+                    const data = await res.json();
+                    const perms = data.permissions || [];
+                    const isAdmin = perms.indexOf('admin') !== -1;
+                    links.forEach(function(link) {
+                        const required = link.getAttribute('data-permission');
+                        if (isAdmin || perms.indexOf(required) !== -1) {
+                            link.style.display = '';
+                        } else {
+                            link.style.display = 'none';
+                        }
+                    });
+                } catch (err) {
+                    console.warn('Could not filter nav by permissions:', err);
+                }
             }
-        }
+
+            filterNavByPermissions();
+        })();
     </script>
-    
+
     {% block scripts %}{% endblock %}
 </body>
 </html>
-

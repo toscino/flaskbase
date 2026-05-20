@@ -10,7 +10,7 @@ def test_import_flask_app():
 def test_flask_app_version():
     from flask_base.flask_base import __version__
 
-    assert __version__ == "0.2.0"
+    assert __version__ == "0.3.0"
 
 
 def test_flask_app_creates_app():

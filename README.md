@@ -1,81 +1,47 @@
 # flask-base
 
-A minimal Flask library for web apps with Firestore, key-based authentication, rate limiting, and Google App Engine deployment helpers.
+**What this is:** A hobby project to make small Flask web apps less painful — auth, Firestore, App Engine deploy, and the usual glue — so I do not have to re‑remember every tool and boilerplate pattern each time I want something live quickly.
 
-## New here?
+It was built heavily with AI help in early 2026. If that bothers future me (or you): that is intentional; please do not whine about it.
 
-Follow **[docs/GETTING_STARTED.md](docs/GETTING_STARTED.md)** — step-by-step setup for:
+---
 
-1. **Environment** — Python, venv, Cursor, install, `.env`  
-2. **Google Cloud** — `gcloud`, project, Firestore, App Engine, billing  
-3. **Run the example app** — browser, Notes, tests  
-4. **Deploy** — `app.production.yaml`, App Engine  
-5. **Publish library** — GitHub Release wheel ([toscino/flaskbase](https://github.com/toscino/flaskbase))  
+Minimal Flask toolkit for App Engine: key-based auth, Firestore helpers, rate limiting, deploy utilities.
+
+## Run the example app
+
+Clone the repo, open **`example/`**, and follow **[example/GETTING_STARTED.md](example/GETTING_STARTED.md)** — Python, `gcloud`, `.env`, local run, deploy.
+
+On GitHub: browse to **`example/`** for [README](example/README.md) and the full guide.
+
+## Quick start (already have Python + gcloud + GCP)
+
+```powershell
+git clone https://github.com/toscino/flaskbase.git
+cd flaskbase
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+pip install -r example/requirements.txt
+cd example
+copy .env.example .env
+# Edit .env
+python app.py --run
+```
+
+Use `/?key=alice-secret` (match `EXAMPLE_KEY_*` in `.env`). Troubleshooting: [example/GETTING_STARTED.md](example/GETTING_STARTED.md).
+
+## flask-base library docs
+
+**[docs/README.md](docs/README.md)** — using flask-base in your own apps, API ([QUICKSTART](flask_base/QUICKSTART.md)), [publishing wheels](docs/PUBLISHING.md), [monorepo development](docs/DEVELOPMENT.md), architecture guides.
 
 ## Repository layout
 
 | Path | Purpose |
 |------|---------|
-| [`flask_base/`](flask_base/) | Installable Python package (`pip install`) |
-| [`example/`](example/) | Starter app: auth pages, REST API, Firestore notes |
-| [`docs/GETTING_STARTED.md`](docs/GETTING_STARTED.md) | Full setup: local, GCP, deploy, optional publishing |
-| [`docs/GCLOUD_SETUP.md`](docs/GCLOUD_SETUP.md) | Redirect — content lives in GETTING_STARTED |
-| [`tests/`](tests/) | Package and example smoke tests |
-
-## Quick start (if you already know the steps)
-
-```powershell
-# Repo root, venv active
-pip install -r requirements-dev.txt
-cd example
-copy .env.example .env
-# Edit .env — see GETTING_STARTED.md
-python app.py --run
-```
-
-Open the URL printed in the console (use `?key=` from `.env`, e.g. `alice-secret`).
-
-## Install in a new project
-
-**Development** (editable, from this monorepo):
-
-```text
--e flask_base
-```
-
-**Production** (App Engine — pinned GitHub Release wheel):
-
-```text
-flask-base @ https://github.com/toscino/flaskbase/releases/download/v0.2.0/flask_base-0.2.0-py3-none-any.whl
-gunicorn>=21.0.0
-```
-
-Bump the URL when you publish a new tag. See [docs/GETTING_STARTED.md](docs/GETTING_STARTED.md) Step 5.
-
-## Minimal app
-
-```python
-from flask_base import FlaskApp
-
-app_manager = FlaskApp("My App")
-app_manager.page("home.html", auth=True, root=True)
-app = app_manager.app
-
-if __name__ == "__main__":
-    app_manager.run()
-```
-
-See [`flask_base/QUICKSTART.md`](flask_base/QUICKSTART.md) for auth keys, services, and deployment.
-
-## Deploy example to App Engine
-
-```bash
-cd example
-gcloud config set project YOUR_PROJECT_ID
-python app.py --deploy
-```
-
-Requires `app.yaml` env vars and Firestore API enabled in your GCP project.
+| [`example/`](example/) | Runnable demo + getting started (GCP included) |
+| [`flask_base/`](flask_base/) | Library source |
+| [`docs/`](docs/) | Library documentation |
+| [`tests/`](tests/) | Smoke tests |
 
 ## License
 

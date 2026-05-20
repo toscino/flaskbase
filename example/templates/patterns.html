@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Patterns - {{ app_name }}{% endblock %}
+
+{% block nav_title %}Patterns{% endblock %}
+
+{% block content %}
+<h1>UI patterns</h1>
+<p class="text-muted text-small" style="margin-bottom: 1rem;">
+    Copy these sections into your own templates. For a real API example, see
+    <a href="/notes">Notes</a>.
+</p>
+
+<div class="settings-section">
+    <h3>Profile</h3>
+    <p class="text-muted text-small">Static settings block — no backend required.</p>
+    <div class="preference-group">
+        <input type="checkbox" id="demo-notifications" checked>
+        <label for="demo-notifications">Email notifications</label>
+    </div>
+    <div class="preference-group">
+        <input type="checkbox" id="demo-dark">
+        <label for="demo-dark">Prefer compact layout</label>
+    </div>
+</div>
+
+<div class="settings-section">
+    <h3>Display</h3>
+    <p><strong>Theme:</strong> uses <code>--fb-primary</code> in the <code>styles</code> template block to rebrand.</p>
+</div>
+
+<div class="section-divider"></div>
+
+<h2>Category tabs</h2>
+<p class="text-muted text-small" style="margin-bottom: 0.75rem;">Client-side filter over sample cards.</p>
+<div class="category-tabs" id="pattern-tabs">
+    <button type="button" class="category-tab active" data-category="all">All</button>
+    <button type="button" class="category-tab" data-category="work">Work</button>
+    <button type="button" class="category-tab" data-category="personal">Personal</button>
+</div>
+<ul class="item-list" id="pattern-cards">
+    <li class="card-item" data-category="work">
+        <div class="card-text">Finish project outline</div>
+    </li>
+    <li class="card-item" data-category="personal">
+        <div class="card-text">Call dentist</div>
+    </li>
+    <li class="card-item" data-category="work">
+        <div class="card-text">Review pull request</div>
+    </li>
+</ul>
+
+<div class="section-divider"></div>
+
+<h2>Messages</h2>
+<p class="text-muted text-small" style="margin-bottom: 0.75rem;">Use <code>FlaskBase.showMessage</code> from flask_base.js.</p>
+<div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px;">
+    <button type="button" class="btn btn-sm" id="demo-success-btn">Show success</button>
+    <button type="button" class="btn btn-sm btn-secondary" id="demo-error-btn">Show error</button>
+    <button type="button" class="btn btn-sm btn-secondary" id="demo-clear-btn">Clear</button>
+</div>
+<p id="pattern-message" class="error-message" style="display: none;"></p>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ flask_base_js }}"></script>
+<script>
+(function () {
+    const tabs = document.querySelectorAll('#pattern-tabs .category-tab');
+    const cards = document.querySelectorAll('#pattern-cards .card-item');
+
+    tabs.forEach(function (tab) {
+        tab.addEventListener('click', function () {
+            const category = tab.getAttribute('data-category');
+            tabs.forEach(function (t) { t.classList.remove('active'); });
+            tab.classList.add('active');
+            cards.forEach(function (card) {
+                const show = category === 'all' || card.getAttribute('data-category') === category;
+                card.style.display = show ? '' : 'none';
+            });
+        });
+    });
+
+    const msg = document.getElementById('pattern-message');
+    document.getElementById('demo-success-btn').addEventListener('click', function () {
+        FlaskBase.showMessage(msg, 'Saved successfully.', 'success');
+    });
+    document.getElementById('demo-error-btn').addEventListener('click', function () {
+        FlaskBase.showMessage(msg, 'Something went wrong.', 'error');
+    });
+    document.getElementById('demo-clear-btn').addEventListener('click', function () {
+        FlaskBase.showMessage(msg, '', 'success');
+    });
+})();
+</script>
+{% endblock %}
