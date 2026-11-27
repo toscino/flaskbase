@@ -2,6 +2,6 @@
 
 from flask_base.flask_base import FlaskApp
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
 __all__ = ["FlaskApp"]
 

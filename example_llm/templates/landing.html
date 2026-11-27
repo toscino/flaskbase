@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Sign in - {{ app_name }}{% endblock %}
+
+{% block content %}
+<h1>{{ app_name }}</h1>
+
+{% if session.get("authenticated") %}
+<div class="info-banner">
+    <p>You are signed in as <strong>{{ session.user_id }}</strong>.</p>
+</div>
+<p class="link-row">
+    <a href="/ask">Open LLM Playground</a>
+</p>
+{% else %}
+<p class="text-muted" style="margin-top: 1rem;">
+    This minimal demo showcases <code>app_manager.llm</code> (<code>generate_text</code> and <code>generate_json</code>)
+    using Vertex AI via <code>flask-base[llm]</code>.
+</p>
+<p class="text-muted text-small" style="margin-top: 1rem; line-height: 1.5;">
+    Sign in by adding your key to the URL:
+</p>
+<p class="code-hint">?key=your-secret</p>
+<p class="text-muted text-small" style="margin-top: 1rem;">
+    Example: <code>{{ request.url_root }}?key=alice-secret</code>
+</p>
+{% endif %}
+{% endblock %}

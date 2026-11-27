@@ -116,8 +116,9 @@ class FlaskApp:
                 else:
                     session.pop("_key_redirected", None)
         
-        # Lazy Firestore initialization
+        # Lazy Firestore and LLM initialization
         self._db: Optional[Any] = None
+        self._llm: Optional[Any] = None
         
         # Register /api/permissions route
         self._register_permissions_route()
@@ -219,6 +220,17 @@ class FlaskApp:
             from .firestore_setup import get_db
             self._db = get_db(self.gcp_project)
         return self._db
+
+    @property
+    def llm(self) -> Any:
+        """Get Google Gen AI LLM client (lazy initialization)."""
+        if self._llm is None:
+            from .llm_setup import get_llm
+            self._llm = get_llm(
+                project_id=self.gcp_project,
+                logger=self.logger,
+            )
+        return self._llm
     
     def get_json(self) -> dict[str, Any]:
         """

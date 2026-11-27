@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+
+{% block title %}LLM Playground - {{ app_name }}{% endblock %}
+
+{% block nav_title %}LLM Playground{% endblock %}
+
+{% block content %}
+<h1>LLM Playground</h1>
+<p class="text-muted text-small" style="margin-bottom: 1.25rem;">
+    Verify <code>app_manager.llm.generate_text()</code> and <code>app_manager.llm.generate_json()</code> end-to-end.
+</p>
+
+<section class="settings-section">
+    <h3>1. Generate Text (<code>/api/ask</code>)</h3>
+    <form id="ask-form">
+        <div class="form-group">
+            <label for="ask-prompt">Prompt</label>
+            <textarea id="ask-prompt" rows="3" placeholder="Ask anything..." required>Explain why Flask is great for small tools in two sentences.</textarea>
+        </div>
+        <div class="form-group">
+            <label for="ask-system">System instruction (optional)</label>
+            <input type="text" id="ask-system" placeholder="e.g. Be concise and friendly.">
+        </div>
+        <div class="form-actions">
+            <button type="submit" id="ask-btn" class="btn">Generate Text</button>
+        </div>
+    </form>
+    <p id="ask-error" class="error-message" style="display: none; margin-top: 12px;"></p>
+    <div id="ask-output" class="card-item" style="display: none; margin-top: 12px; white-space: pre-wrap;"></div>
+</section>
+
+<section class="settings-section">
+    <h3>2. Structured JSON (<code>/api/summarize</code>)</h3>
+    <form id="summarize-form">
+        <div class="form-group">
+            <label for="summarize-text">Text to analyze</label>
+            <textarea id="summarize-text" rows="4" placeholder="Paste any text to summarize..." required>We just shipped flask-base v0.4.0 with optional Google Gen AI support! Apps can now call app_manager.llm.generate_text() and generate_json() with Pydantic validation and automatic token logging.</textarea>
+        </div>
+        <div class="form-actions">
+            <button type="submit" id="summarize-btn" class="btn">Summarize to JSON</button>
+        </div>
+    </form>
+    <p id="summarize-error" class="error-message" style="display: none; margin-top: 12px;"></p>
+    <div id="summarize-output" class="card-item" style="display: none; margin-top: 12px;"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ flask_base_js }}"></script>
+<script>
+const askForm = document.getElementById('ask-form');
+const askBtn = document.getElementById('ask-btn');
+const askError = document.getElementById('ask-error');
+const askOutput = document.getElementById('ask-output');
+
+askForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    FlaskBase.showMessage(askError, '', 'error');
+    askOutput.style.display = 'none';
+    askBtn.disabled = true;
+    askBtn.textContent = 'Generating...';
+
+    try {
+        const prompt = document.getElementById('ask-prompt').value.trim();
+        const system_instruction = document.getElementById('ask-system').value.trim();
+        const data = await FlaskBase.apiFetch('/api/ask', {
+            method: 'POST',
+            body: { prompt, system_instruction },
+        });
+        askOutput.textContent = data.text || '';
+        askOutput.style.display = 'block';
+    } catch (err) {
+        FlaskBase.showMessage(askError, err.message, 'error');
+    } finally {
+        askBtn.disabled = false;
+        askBtn.textContent = 'Generate Text';
+    }
+});
+
+const summarizeForm = document.getElementById('summarize-form');
+const summarizeBtn = document.getElementById('summarize-btn');
+const summarizeError = document.getElementById('summarize-error');
+const summarizeOutput = document.getElementById('summarize-output');
+
+summarizeForm.addEventListener('submit', async function (e) {
+    e.preventDefault();
+    FlaskBase.showMessage(summarizeError, '', 'error');
+    summarizeOutput.style.display = 'none';
+    summarizeBtn.disabled = true;
+    summarizeBtn.textContent = 'Summarizing...';
+
+    try {
+        const text = document.getElementById('summarize-text').value.trim();
+        const data = await FlaskBase.apiFetch('/api/summarize', {
+            method: 'POST',
+            body: { text },
+        });
+        const r = data.result || {};
+        const tagsHtml = (r.tags || [])
+            .map(function (t) { return '<span class="swipe-item-tag">' + FlaskBase.escapeHtml(t) + '</span>'; })
+            .join(' ');
+        summarizeOutput.innerHTML =
+            '<div style="font-weight: 600; font-size: 16px; margin-bottom: 6px;">' +
+                FlaskBase.escapeHtml(r.headline || '') +
+            '</div>' +
+            '<p style="margin-bottom: 8px; line-height: 1.4;">' +
+                FlaskBase.escapeHtml(r.summary || '') +
+            '</p>' +
+            '<div class="card-meta">' +
+                '<span>Sentiment: <strong>' + FlaskBase.escapeHtml(r.sentiment || '') + '</strong></span>' +
+                tagsHtml +
+            '</div>' +
+            '<pre class="code-hint" style="overflow-x: auto; margin-top: 10px;">' +
+                FlaskBase.escapeHtml(JSON.stringify(r, null, 2)) +
+            '</pre>';
+        summarizeOutput.style.display = 'block';
+    } catch (err) {
+        FlaskBase.showMessage(summarizeError, err.message, 'error');
+    } finally {
+        summarizeBtn.disabled = false;
+        summarizeBtn.textContent = 'Summarize to JSON';
+    }
+});
+</script>
+{% endblock %}

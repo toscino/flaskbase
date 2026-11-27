@@ -6,7 +6,7 @@ It was built heavily with AI help in early 2026. If that bothers future me (or y
 
 ---
 
-Minimal Flask toolkit for App Engine: key-based auth, Firestore helpers, rate limiting, deploy utilities.
+Minimal Flask toolkit for App Engine: key-based auth, Firestore helpers, optional Google Gen AI (`app_manager.llm`), rate limiting, deploy utilities.
 
 ## Run the example app
 
@@ -38,7 +38,8 @@ Use `/?key=alice-secret` (match `EXAMPLE_KEY_*` in `.env`). Troubleshooting: [ex
 
 | Path | Purpose |
 |------|---------|
-| [`example/`](example/) | Runnable demo + getting started (GCP included) |
+| [`example/`](example/) | Runnable demo + getting started (auth, Firestore, GCP) |
+| [`example_llm/`](example_llm/) | Minimal LLM playground (`app_manager.llm` text + structured JSON) |
 | [`flask_base/`](flask_base/) | Library source |
 | [`docs/`](docs/) | Library documentation |
 | [`tests/`](tests/) | Smoke tests |

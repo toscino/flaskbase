@@ -10,6 +10,12 @@ A minimal library for quickly creating Flask web apps with Firestore, authentica
 pip install flask-base
 ```
 
+For optional Google Gen AI (`app_manager.llm`) support:
+
+```bash
+pip install "flask-base[llm]"
+```
+
 Or install from source:
 
 ```bash
@@ -97,6 +103,7 @@ env_variables:
 
 - **Flask initialization** - App, secret key, static files
 - **Firestore connection** - Lazy initialization with optional GCP project
+- **Optional LLM client** - Lazy Google Gen AI (Vertex AI Enterprise) wrapper via `app_manager.llm` (`generate_text`, `generate_json`, and raw `.client`)
 - **Authentication** - Unified user-permission model with key-based auth
 - **Rate limiting** - Per-route or global limits
 - **Navigation** - Auto-generates from page registrations

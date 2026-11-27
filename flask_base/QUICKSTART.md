@@ -160,6 +160,7 @@ FlaskApp(app_name: str, demo_user: str = "demo", gcp_project: Optional[str] = No
 **Properties:**
 - `app_manager.logger` - Access Flask logger
 - `app_manager.db` - Access Firestore client (lazy init)
+- `app_manager.llm` - Access optional Google Gen AI client (lazy init; requires `flask-base[llm]`)
 - `app_manager.current_user` - Current user ID or demo_user
 
 **Methods:**
@@ -363,6 +364,49 @@ def create():
     except ValueError as e:
         return app_manager.jsonify({"error": str(e)}), 400
 ```
+
+### LLM Integration (Optional)
+
+Install the optional extra: `pip install "flask-base[llm]"` (installs `google-genai` and `pydantic`). Non-LLM apps do not need this extra—`app_manager.llm` is lazily initialized on first access.
+
+**Environment variables:**
+- `GOOGLE_CLOUD_PROJECT` — GCP project ID (shared with Firestore)
+- `LLM_LOCATION` — Vertex AI location (default: `"global"`)
+- `LLM_MODEL` — Default Gemini model (default: `"gemini-3.1-flash-lite"`, overridable per call via `model=...`)
+
+**Usage in a service:**
+
+```python
+from pydantic import BaseModel
+
+
+class Summary(BaseModel):
+    headline: str
+    tags: list[str]
+
+
+class MyAIService:
+    def __init__(self, app_manager):
+        self.llm = app_manager.llm
+        self.logger = app_manager.logger
+
+    def ask(self, prompt: str) -> str:
+        return self.llm.generate_text(
+            prompt,
+            system_instruction="Be concise.",
+            temperature=0.2,
+        )
+
+    def summarize(self, text: str) -> Summary:
+        # Returns a validated Pydantic Summary instance (call .model_dump() for a dict)
+        return self.llm.generate_json(
+            text,
+            Summary,
+            system_instruction="Extract a headline and tags.",
+        )
+```
+
+For streaming, multimodal inputs, tool calling, or newer SDK features, use the underlying `google.genai.Client` directly via `app_manager.llm.client`. Every call logs model name, latency, and token usage via `app_manager.logger`, and fails fast (no hidden retries) so your app controls its own fallback behavior.
 
 ## Architecture
 
